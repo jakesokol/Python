@@ -3,7 +3,7 @@
 # Author: Jake Sokol
 # Version: 1.0
 #	
-# This script collects conntrack count, CPU usage, memory info, uptime, PS info, parses data and appends data to MySQL
+# This script collects conntrack count, CPU usage, memory info, uptime, PS info, parses data and inserts it into MySQL.
 #
 # Conntrack File Location: "/proc/sys/net/netfilter/nf_conntrack_count
 # CPU command: #mpstat -P ALL

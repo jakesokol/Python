@@ -1,5 +1,5 @@
 <?php
-// This script will pull recent F2300 data collected from MySQL DB and format the info into tables to display info
+// This script will pull recent F2300 data from the MySQL DB and format the data into HTML tables.
 // Author: Jake Sokol
 // Version: 1.0
 
