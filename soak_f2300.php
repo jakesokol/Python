@@ -1,12 +1,13 @@
 <?php
-// This script will pull recent F2300 data from the MySQL DB and format the data into HTML tables.
+// This script will pull recent F2300 data from the MySQL DB and format the data
+// into HTML tables.
 // Author: Jake Sokol
 // Version: 1.0
 
 
 //AEI Page Header
 require("session.php");
-require("header.php"); 
+require("header.php");
 
 //values for table
 $serial_array=array();
@@ -39,7 +40,7 @@ $alert_entries_array=array();
 
 <html><font face = "helvetica" >
 <body></br>
-	
+
 	<?php
 
 	//
@@ -60,13 +61,13 @@ $alert_entries_array=array();
 		$result_num = mysql_num_rows($result_basicinfo);
 		if ($result_num > 0){
 			while ($row_basicinfo = mysql_fetch_array($result_basicinfo))
-			{	
+			{
 				array_push($dut_array, $row_basicinfo['DUT']);
 				array_push($serial_array, $row_basicinfo['SERIAL']);
 				array_push($firm_array, $row_basicinfo['SWVER']);
 				array_push($uptime_array, $row_basicinfo['DATA']);
 				array_push($contact_time_array, $row_basicinfo['TIMESTAMP']);
-				
+
 				// Converting uptime dates into int values(HR)
 				$days = explode(" ",intval($row_basicinfo['DATA']));
 				array_push($uptime_value_array, $days[0]);
@@ -80,10 +81,10 @@ $alert_entries_array=array();
 			array_push($uptime_value_array, 0);
 			array_push($contact_time_array, "N/A");
 		}
-		
+
 		// Data processing for CPU info
 		$result_num = mysql_num_rows($result_cpu);
-		if ($result_num > 0){		
+		if ($result_num > 0){
 			while ($row_cpu = mysql_fetch_array($result_cpu))
 			{
 				$cpu0_usage = 100-$row_cpu['CPU0_IDLE'];
@@ -155,7 +156,7 @@ $alert_entries_array=array();
 			array_push($smem_inuse_array, "N/A");
 			array_push($smem_usable_array, "N/A");
 		}
-		
+
 		// Data processing for CONNTRACK info
 		$result_num = mysql_num_rows($result_conntrack);
 		if ($result_num > 0){
@@ -169,24 +170,24 @@ $alert_entries_array=array();
 			array_push($conntrack_array, "N/A");
 			array_push($conntrack_value_array, 0);
 		}
-		
+
 		// Alerts collected for each DUT
 		$result_num = mysql_num_rows($result_alerts);
 		array_push($alert_entries_array, $result_num);
-		
+
 	}
 	// Close MySQL connection
 	mysql_close();
 
 	//
-	// Display the Overview table 
+	// Display the Overview table
 	//
 	echo "<dev>";
 	echo "<table border='2' style='border-collapse:collapse; font-size:14px' cellpadding='2' align=center >";
 	echo "<tr style='background-color:#4747A3'> <th colspan='13'><font color=#FFFFFF>F2300 Soak Station Overview</font></th></tr>";
 	echo "<tr style='background-color:#91B5FF'> <th>UNIT</th> <th>DUT</th> <th>SERIAL</th> <th>FW VERSION</th> <th>UPTIME</th> <th>TRAFFIC(CT)</th> <th>LAST CONTACT</th> <th>ALERTS</th></tr>";
 	for ($i=0; $i < 6; $i++)
-	{	
+	{
 		// Highlight role if:
 		// 1. DUT entry is not available
 		// 2. Uptime is less than 1 day
@@ -199,7 +200,7 @@ $alert_entries_array=array();
 			if ($i & 1){$bgcolor="#EFFFE1";}
 			else {$bgcolor="#FFFFE1";}
 		}
-		
+
 		// Display Unit + DUT + Serial
 		echo "<tr style='background-color:$bgcolor'><td>";
 		$row_num = $i + 1;
@@ -209,21 +210,21 @@ $alert_entries_array=array();
 		echo "</td><td>";
 		echo "$serial_array[$i]";
 		echo "</td><td>";
-	
+
 		// Display Firmware version and uptime
 		echo "$firm_array[$i]";
 		echo "</td><td>";
 		echo "$uptime_array[$i]";
 		echo "</td><td>";
-		
+
 		// Display Conntrack (Traffic Load)
 		echo "$conntrack_array[$i]";
 		echo "</td><td>";
-		
+
 		// Display last contact time
 		echo "$contact_time_array[$i]";
 		echo "</td><td>";
-		
+
 		// Display number of alerts for each DUT
 		echo "$alert_entries_array[$i]";
 		echo "</td></tr>";
@@ -233,7 +234,7 @@ $alert_entries_array=array();
 	?>
 	<body></br>
 	<?
-	// Display the Memory table 
+	// Display the Memory table
 	//
 
 	echo "<dev>";
@@ -241,7 +242,7 @@ $alert_entries_array=array();
 	echo "<tr style='background-color:#4747A3'> <th colspan='13'><font color=#FFFFFFF>Memory Usage</font></th></tr>";
 	echo "<tr style='background-color:#91B5FF'> <th>UNIT</th> <th>SERIAL</th> <th>TOTAL MEM</th> <th>FREE MEM</th> <th>MEM BUFFERS</th> <th>MEM CACHED</th> <th>AVAILABLE MEM</th> </tr>";
 	for ($i=0; $i < 6; $i++)
-	{	
+	{
 		// Highlight role if:
 		// 1. DUT entry is not available
 		// 2. Uptime is less than 1 day
@@ -254,7 +255,7 @@ $alert_entries_array=array();
 			if ($i & 1){$bgcolor="#EFFFE1";}
 			else {$bgcolor="#FFFFE1";}
 		}
-		
+
 		// Display Unit + DUT + Serial
 		echo "<tr style='background-color:$bgcolor'><td>";
 		$row_num = $i + 1;
@@ -264,23 +265,23 @@ $alert_entries_array=array();
 		echo "</td><td>";
 
 		// Display Memory Usage
-		echo "$mem_total_array[$i]"; 
+		echo "$mem_total_array[$i]";
 		echo "</td><td>";
 		echo "$mem_free_array[$i]";
 		echo "</td><td>";
-		echo "$mem_buffer_array[$i]"; 
+		echo "$mem_buffer_array[$i]";
 		echo "</td><td>";
-		echo "$mem_cached_array[$i]"; 
+		echo "$mem_cached_array[$i]";
 		echo "</td><td>";
 		echo "$mem_avail_array[$i]";
 		echo "</td></tr>";
-	}	
+	}
     echo "</table>";
 	echo "</dev>";
 	?>
 	<body></br>
 	<?
-	// Display the SMemory table 
+	// Display the SMemory table
 	//
 
 	echo "<dev>";
@@ -288,7 +289,7 @@ $alert_entries_array=array();
 	echo "<tr style='background-color:#4747A3'> <th colspan='13'><font color=#FFFFFFF>Shared Memory</font></th></tr>";
 	echo "<tr style='background-color:#91B5FF'> <th>UNIT</th> <th>SERIAL</th> <th>TOTAL SMEM</th> <th>FREE SMEM</th> <th>SMEM IN USE</th> <th>USABLE SMEM</th> </tr>";
 	for ($i=0; $i < 6; $i++)
-	{	
+	{
 		// Highlight role if:
 		// 1. DUT entry is not available
 		// 2. Uptime is less than 1 day
@@ -301,7 +302,7 @@ $alert_entries_array=array();
 			if ($i & 1){$bgcolor="#EFFFE1";}
 			else {$bgcolor="#FFFFE1";}
 		}
-		
+
 		// Display Unit + DUT + Serial
 		echo "<tr style='background-color:$bgcolor'><td>";
 		$row_num = $i + 1;
@@ -311,30 +312,30 @@ $alert_entries_array=array();
 		echo "</td><td>";
 
 		// Display Shared Memory Usage
-		echo "$smem_total_array[$i]"; 
+		echo "$smem_total_array[$i]";
 		echo "</td><td>";
 		echo "$smem_free_array[$i]";
 		echo "</td><td>";
-		echo "$smem_inuse_array[$i]"; 
+		echo "$smem_inuse_array[$i]";
 		echo "</td><td>";
-		echo "$smem_usable_array[$i]"; 
+		echo "$smem_usable_array[$i]";
 		echo "</td></tr>";
-	}	
+	}
     echo "</table>";
 	echo "</dev>";
 	?>
 	<body></br>
 	<?
-	
-	// Display the CPU table 
+
+	// Display the CPU table
 	//
 	echo "<dev>";
 	echo "<table border='2' style='border-collapse:collapse; font-size:14px' cellpadding='2' align=center >";
 	echo "<tr style='background-color:#4747A3'> <th colspan='13'><font color=#FFFFFF>CPU STATUS</font></th></tr>";
 	echo "<tr style='background-color:#91B5FF'> <th>UNIT</th> <th>SERIAL</th> <th>CPU0 USR</th> <th>CPU1 USR</th> <th>CPU0 SYS</th> <th>CPU1 SYS</th> <th>CPU0 IDLE</th> <th>CPU1 IDLE</th> <th>CPU0 USAGE</th> <th>CPU1 USAGE</th> </tr>";
-	
+
 	for ($i=0; $i < 6; $i++)
-	{	
+	{
 		// Highlight role if:
 		// 1. DUT entry is not available
 		// 2. Uptime is less than 1 day
@@ -347,7 +348,7 @@ $alert_entries_array=array();
 			if ($i & 1){$bgcolor="#EFFFE1";}
 			else {$bgcolor="#FFFFE1";}
 		}
-		
+
 		// Display Unit + Serial
 		echo "<tr style='background-color:$bgcolor'><td>";
 		$row_num = $i + 1;
@@ -369,14 +370,14 @@ $alert_entries_array=array();
 		echo "</td><td>";
 		echo "$cpu1_idle_array[$i]";
 		echo "</td><td>";
-		echo "$cpu0_usage_array[$i]"; 
+		echo "$cpu0_usage_array[$i]";
 		echo "</td><td>";
 		echo "$cpu1_usage_array[$i]";
 		echo "</td></tr>";
 	}
-	
+
 	echo "</table>";
 	echo "</dev>";
 	?>
-</body>	
+</body>
 </font></html>
