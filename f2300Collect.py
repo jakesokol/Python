@@ -2,8 +2,9 @@
 ##
 # Author: Jake Sokol
 # Version: 1.0
-#	
-# This script collects conntrack count, CPU usage, memory info, uptime, PS info, parses data and appends data to MySQL
+#
+# This script collects conntrack count, CPU usage, memory info, uptime, PS info,
+# parses data and inserts it into MySQL.
 #
 # Conntrack File Location: "/proc/sys/net/netfilter/nf_conntrack_count
 # CPU command: #mpstat -P ALL
@@ -35,10 +36,10 @@ deviceinfox = ["DUT",txt,".txt"]
 deviceinfo = ''.join(deviceinfox)
 
 startTime = datetime.now()
-timestamp = datetime.now() 
+timestamp = datetime.now()
 
 
-def datacollect():	
+def datacollect():
 # Login to Telnet to collect and save device info
 	print ("INFO: Starting Data Collection on "+DUTIP)
 	time.sleep(3)
@@ -49,7 +50,7 @@ def datacollect():
 		session.expect("Login:")
 		session.sendline(TelnetUser)
 		session.expect("Password:")
-		session.sendline(TelnetPswd)		
+		session.sendline(TelnetPswd)
 		session.expect('.*>')
 
 		print "INFO: Collecting DUT's Software Version"
@@ -60,7 +61,7 @@ def datacollect():
 		swversion = session.after.split()[1]
 		ts = time.time()
 		swt = datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
-		
+
 		print "INFO: Collecting DUT's Serial Number"
 		session.send('\n')
 		session.expect('.*>')
@@ -69,8 +70,8 @@ def datacollect():
 		serialx = session.after.split("=")[1]
 		serial = serialx[:14]
 		ts = time.time()
-		snwt = datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')	
-	
+		snwt = datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+
 		print "INFO: Collecting DUT's uptime"
 		session.send('\n')
 		session.expect('.*>')
@@ -85,7 +86,7 @@ def datacollect():
 		session.send('\n')
 		session.expect('.*>')
 		session.sendline('ps -ef')
-		session.expect('.*>')		
+		session.expect('.*>')
 		ps = session.after
 		ts = time.time()
 		pst = datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
@@ -94,12 +95,12 @@ def datacollect():
 		session.send('\n')
 		session.expect('.*>')
 		session.sendline('meminfo')
-		session.expect('.*>')		
+		session.expect('.*>')
 		smem_output = session.after
 		ts = time.time()
 		smemt = datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
 
-		print "INFO: Collecting DUT's nf_conntrack_count"	
+		print "INFO: Collecting DUT's nf_conntrack_count"
 		session.sendline('sh')
 		time.sleep(1)
 		session.expect('.*#')
@@ -108,9 +109,9 @@ def datacollect():
 		ct_output = session.after
 		ts = time.time()
 		connt = datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
-		
+
 		print "INFO: Collecting DUT's CPU usage"
-		session.send('\n')	
+		session.send('\n')
 		session.expect('.*#')
 		session.sendline('mpstat -P ALL')
 		session.expect('.*#')
@@ -119,7 +120,7 @@ def datacollect():
 		cput = datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
 
 		print "INFO: Collecting DUT's memory info"
-		session.send('\n')	
+		session.send('\n')
 		session.expect('.*#')
 		session.sendline('cat /proc/meminfo')
 		session.expect('.*#')
@@ -133,23 +134,23 @@ def datacollect():
 		time.sleep(2)
 		session.expect('.*')
 		session.sendline('exit')
-	
+
 
 #########################################
 # Parsing PEXPECT outputs
 #########################################
-		
-# Prepare conntrack values for mySQL input	
+
+# Prepare conntrack values for mySQL input
 		print "INFO: Parsing data"
 		ct_ty = 'CONNTRACK'
-		conntrack=''	
+		conntrack=''
 		count = ct_output.split()[2]
 
 # Prepare devicetype and current firmware for mySQL input
 		devicetype, fwversion = swversion.split("-",1)
 		dut = devicetype
-		
-# Prepare CPU values for mySQL input	
+
+# Prepare CPU values for mySQL input
 		cp_ty = 'CPU'
 		cpu = cpu_output.split()
 		cpu0_usr=cpu[34]
@@ -158,7 +159,7 @@ def datacollect():
 		cpu1_sys=cpu[47]
 		cpu0_idle=cpu[42]
 		cpu1_idle=cpu[53]
-		
+
 # Prepare Memory values for mySQL input
 		mem_ty = 'MEMORY'
 		memory = mem_output.split()
@@ -190,24 +191,24 @@ def datacollect():
 		con = MySQLdb.Connection(host=mysql_url, user=mysql_user, passwd=mysql_passwd, db=mysql_db);
 		cur = con.cursor()
 
-			
+
 #########################################
 # Data verification and error catching
 #########################################
-	
-# Data verfication: Conntrack Count		
+
+# Data verfication: Conntrack Count
 		if (count.isdigit()):
 			conntrack = int(count)
 			if (conntrack < 10):
 				info = 'Conntrack count is less than 10!'
 				cur.execute("""INSERT INTO alerts(DUT, SERIAL, SWVER, TYPE, INFO, TIMESTAMP) VALUE (%s, %s, %s, %s, %s, %s)""", (dut, serial, swversion, ct_ty, info, timestamp))
-				con.commit()				
+				con.commit()
 			else:
 				conntrack = 0
 				info = 'Conntrack count is either 0 or not collectable!'
 				cur.execute("""INSERT INTO alerts(DUT, SERIAL, SWVER, TYPE, INFO, TIMESTAMP) VALUE (%s, %s, %s, %s, %s, %s)""", (dut, serial, swversion, ct_ty, info, timestamp))
 				con.commit()
-		
+
 # Data verfication: CPU Usage
 		if (float(cpu0_idle) <= 10 or float(cpu1_idle) <= 10):
 			info = 'Warning: CPU usage is near 100%!'
@@ -220,7 +221,7 @@ def datacollect():
 		elif (float(cpu0_idle) <= 50 or float(cpu1_idle) <= 50):
 			info = 'Warning: CPU usage is higher than 50%!'
 			cur.execute("""INSERT INTO alerts(DUT, SERIAL, SWVER, TYPE, INFO, TIMESTAMP) VALUE (%s, %s, %s, %s, %s, %s)""", (dut, serial, swversion, cp_ty, info, timestamp))
-			con.commit()	
+			con.commit()
 
 # Data verfication: Memory Info
 		mem_fbc = int(mem_free)+int(mem_buffer)+int(mem_cached)
@@ -243,8 +244,8 @@ def datacollect():
 			cur.execute("""INSERT INTO alerts(DUT, SERIAL, SWVER, TYPE, INFO, TIMESTAMP) VALUE (%s, %s, %s, %s, %s, %s)""", (dut, serial, swversion, ut_ty, info, timestamp))
 			con.commit()
 
-		
-###########################################	
+
+###########################################
 # MySQL Operations: Storing information
 ###########################################
 
@@ -252,12 +253,12 @@ def datacollect():
 		cur.execute("""INSERT INTO conntrack(DUT, SERIAL, SWVER, TYPE, DATA, TIMESTAMP) VALUE (%s, %s, %s, %s, %s, %s)""", (dut, serial, swversion, ct_ty, conntrack, timestamp))
 		con.commit()
 
-# CPU Table Headers (DUT, SERIAL, SWVERSION, TYPE, CPU0_USR, 
+# CPU Table Headers (DUT, SERIAL, SWVERSION, TYPE, CPU0_USR,
 # CPU1_USR, CPU0_SYS, CPU1_SYS, CPU0_IDLE, CPU1_IDLE, TIMESTAMP)
 		cur.execute("""INSERT INTO cpu(DUT, SERIAL, SWVER, TYPE, CPU0_USR, CPU1_USR, CPU0_SYS, CPU1_SYS, CPU0_IDLE, CPU1_IDLE, TIMESTAMP) VALUE (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""", (dut, serial, swversion, cp_ty, float(cpu0_usr), float(cpu1_usr), float(cpu0_sys), float(cpu1_sys), float(cpu0_idle), float(cpu1_idle), timestamp))
 		con.commit()
-	
-# Memory Table Header (DUT, SERIAL, SWVER, TYPE, MEM_TOTAL, MEM_FREE, 
+
+# Memory Table Header (DUT, SERIAL, SWVER, TYPE, MEM_TOTAL, MEM_FREE,
 # MEM_BUFFERS, MEM_CACHED, TIMESTAMP)
 		cur.execute("""INSERT INTO memory(DUT, SERIAL, SWVER, TYPE, MEM_TOTAL, MEM_FREE, MEM_BUFFERS, MEM_CACHED, TIMESTAMP) VALUE (%s, %s, %s, %s, %s, %s, %s, %s, %s)""", (dut, serial, swversion, mem_ty, mem_total, mem_free, mem_buffer, mem_cached, timestamp))
 		con.commit()
@@ -265,8 +266,8 @@ def datacollect():
 # Uptime Table Headers (DUT, SERIAL, SWVER, TYPE, DATA, TIMESTAMP)
 		cur.execute("""INSERT INTO uptime(DUT, SERIAL, SWVER, TYPE, DATA, TIMESTAMP) VALUE (%s, %s, %s, %s, %s, %s)""", (dut, serial, swversion, ut_ty, uptime, timestamp))
 		con.commit()
-		
-# Shared Memory Table Headers (DUT, SERIAL, SWVER, SMEM_TOTAL, SMEM_USABLE, 
+
+# Shared Memory Table Headers (DUT, SERIAL, SWVER, SMEM_TOTAL, SMEM_USABLE,
 # SMEM_INUSED, SMEM_FREE, TIMESTAMP)
 		cur.execute("""INSERT INTO smem(DUT, serial, SWVER, TYPE, SMEM_TOTAL, SMEM_USABLE, SMEM_INUSED, SMEM_FREE, TIMESTAMP) VALUE (%s, %s, %s, %s, %s, %s, %s, %s, %s)""", (dut, serial, swversion, smem_ty, int(smem_total), int(smem_usable), int(smem_inused), int(smem_free), timestamp))
 		con.commit()
