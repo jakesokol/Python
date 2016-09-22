@@ -43,7 +43,7 @@ class Checkout(unittest.TestCase):
         driver.find_element_by_id("ctl00_cphMain_rtbUserName_txtRestricted").clear()
         driver.find_element_by_id("ctl00_cphMain_rtbUserName_txtRestricted").send_keys("jsokol")
         driver.find_element_by_id("ctl00_cphMain_rtbPassword_txtRestricted").clear()
-        driver.find_element_by_id("ctl00_cphMain_rtbPassword_txtRestricted").send_keys("!california99")
+        driver.find_element_by_id("ctl00_cphMain_rtbPassword_txtRestricted").send_keys("notmyrealpassword")
         driver.find_element_by_id("ctl00_cphMain_lbLogin").click()
         try: self.assertEqual(str(order), driver.find_element_by_link_text(str(order)).text)
         except AssertionError as e: self.verificationErrors.append(str(e))
